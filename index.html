@@ -131,6 +131,7 @@
     const position = new THREE.Vector3();
     const orientation = new THREE.Euler();
     const size = new THREE.Vector3(0.5, 0.5, 0.5); // Default decal size
+    let aspectRatio = 1; // Add this line to store aspect ratio
 
     init();
     animate();
@@ -337,6 +338,9 @@
         mouseHelper.lookAt(n);
         orientation.copy(mouseHelper.rotation);
 
+        // Save current rotation
+        orientation.z = THREE.MathUtils.degToRad(parseFloat(document.getElementById('decalRotation').value));
+
         // Find the object that was intersected
         const targetObject = raycaster.intersectObject(model, true)[0]?.object;
 
@@ -347,19 +351,16 @@
 
         // Update decal
         try {
+          // Store current material to preserve opacity and texture
+          const currentMaterial = currentDecal.material;
+
           // Remove current decal first
           scene.remove(currentDecal);
           if (currentDecal.geometry) currentDecal.geometry.dispose();
 
-          // Create new decal at updated position
-          const m = new THREE.DecalGeometry(
-            targetObject,
-            position,
-            orientation,
-            size
-          );
-
-          currentDecal.geometry = m;
+          // Create new decal at updated position with preserved properties
+          const m = new THREE.DecalGeometry(targetObject, position, orientation, size);
+          currentDecal = new THREE.Mesh(m, currentMaterial);
           scene.add(currentDecal);
         } catch (e) {
           console.error("Error updating decal:", e);
@@ -440,6 +441,49 @@
     }
 
     function setupEventListeners() {
+      // Image upload handler
+      document.getElementById('imageUpload').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+              // Calculate and store aspect ratio
+              aspectRatio = this.width / this.height;
+              
+              // Update size to maintain aspect ratio
+              const currentSize = parseFloat(document.getElementById('decalSize').value);
+              size.set(currentSize * aspectRatio, currentSize, currentSize);
+              
+              const texture = new THREE.Texture(this);
+              texture.needsUpdate = true;
+              texture.encoding = THREE.sRGBEncoding;
+              
+              // Update current decal if it exists
+              if (currentDecal && currentDecal.material) {
+                currentDecal.material.map = texture;
+                currentDecal.material.needsUpdate = true;
+                // Update geometry with new aspect ratio
+                updateCurrentDecal();
+              }
+              
+              // Update decal material for future decals
+              decalMaterial.map = texture;
+              decalMaterial.needsUpdate = true;
+              
+              // Store the texture
+              if (customTexture) {
+                customTexture.dispose();
+              }
+              customTexture = texture;
+            };
+            img.src = event.target.result;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
       // Place decal on click
       window.addEventListener('pointerdown', function (event) {
         placeDecal(event.clientX, event.clientY);
@@ -449,7 +493,8 @@
       document.getElementById('decalSize').addEventListener('input', function () {
         const value = parseFloat(this.value);
         document.getElementById('sizeValue').textContent = value.toFixed(1);
-        size.set(value, value, value);
+        // Update size maintaining aspect ratio
+        size.set(value * aspectRatio, value, value);
         
         if (currentDecal) {
           updateCurrentDecal();
@@ -554,7 +599,11 @@
       position.copy(intersects[0].point);
       const normal = intersects[0].face.normal.clone();
       normal.transformDirection(targetObject.matrixWorld);
+      
+      // Keep current rotation when creating new decal
+      const currentRotation = parseFloat(document.getElementById('decalRotation').value);
       orientation.setFromVector3(normal);
+      orientation.z = THREE.MathUtils.degToRad(currentRotation);
 
       // Remove the current decal if it exists
       if (currentDecal) {
@@ -562,9 +611,13 @@
         if (currentDecal.geometry) currentDecal.geometry.dispose();
       }
 
-      // Create the decal
+      // Create the decal with current settings
       const material = decalMaterial.clone();
       material.opacity = parseFloat(document.getElementById('decalOpacity').value);
+      
+      // Use current size value
+      const currentSize = parseFloat(document.getElementById('decalSize').value);
+      size.set(currentSize * aspectRatio, currentSize, currentSize);
 
       try {
         const decalGeometry = new THREE.DecalGeometry(targetObject, position, orientation, size);
