@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>3D Model with Moveable Decal</title>
   <style>
     body {
@@ -12,18 +13,21 @@
       color: white;
       font-family: Arial, sans-serif;
     }
+
     #controls {
       position: absolute;
       top: 10px;
       left: 10px;
       padding: 10px;
-      background-color: rgba(0,0,0,0.5);
+      background-color: rgba(0, 0, 0, 0.5);
       border-radius: 5px;
       width: 250px;
     }
+
     input {
       margin-bottom: 10px;
     }
+
     button {
       background-color: #444;
       color: white;
@@ -33,25 +37,31 @@
       border-radius: 3px;
       margin-bottom: 5px;
     }
+
     button:hover {
       background-color: #666;
     }
+
     .control-group {
       margin-bottom: 10px;
     }
+
     label {
       display: inline-block;
       width: 70px;
     }
+
     input[type="range"] {
       width: 150px;
       vertical-align: middle;
     }
+
     .value-display {
       display: inline-block;
       width: 30px;
       text-align: right;
     }
+
     .loading {
       position: fixed;
       top: 50%;
@@ -60,43 +70,44 @@
       color: white;
       font-size: 18px;
     }
+
     #info {
       position: absolute;
       top: 10px;
       width: 100%;
       text-align: center;
     }
-    #renderer {
-      width: 100%;
-      height: 100vh;
-      display: block;
-    }
   </style>
 </head>
+
 <body>
   <div id="loading" class="loading">Loading model...</div>
   <div id="info">Drag to move decal on model surface</div>
-  
+
   <div id="controls">
     <h3>Decal Controls</h3>
     <input type="file" id="imageUpload" accept="image/*" />
-    
+
     <div class="control-group">
       <label>Size:</label>
       <input type="range" id="decalSize" min="0.1" max="2" step="0.1" value="0.5">
       <span class="value-display" id="sizeValue">0.5</span>
     </div>
-    
+
     <div class="control-group">
       <label>Opacity:</label>
       <input type="range" id="decalOpacity" min="0.1" max="1" step="0.1" value="1">
       <span class="value-display" id="opacityValue">1.0</span>
     </div>
-    
+
+    <div class="control-group">
+      <label>Rotation:</label>
+      <input type="range" id="decalRotation" min="-180" max="180" step="1" value="0">
+      <span class="value-display" id="rotationValue">0</span>
+    </div>
+
     <button id="clearDecals">Remove Decal</button>
   </div>
-
-  <div id="renderer"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/js/controls/OrbitControls.js"></script>
@@ -110,13 +121,13 @@
     let customTexture = null;
     let isDragging = false;
     let controlsEnabled = true;
-    
+
     const intersection = {
       intersects: false,
       point: new THREE.Vector3(),
       normal: new THREE.Vector3()
     };
-    
+
     const position = new THREE.Vector3();
     const orientation = new THREE.Euler();
     const size = new THREE.Vector3(0.5, 0.5, 0.5); // Default decal size
@@ -128,12 +139,12 @@
     function init() {
       // Main scene
       scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.set(0, 0, 5);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
-      document.getElementById('renderer').appendChild(renderer.domElement);
+      document.body.appendChild(renderer.domElement);
 
       // Controls
       controls = new THREE.OrbitControls(camera, renderer.domElement);
@@ -145,7 +156,7 @@
       // Setup raycaster
       raycaster = new THREE.Raycaster();
       mouse = new THREE.Vector2();
-      
+
       // Lights
       scene.add(new THREE.AmbientLight(0x888888));
       const light = new THREE.PointLight(0xffffff, 1);
@@ -159,42 +170,43 @@
 
       // Setup decal functionality
       setupDecalFunctionality();
-      
+
       // Load GLB model
       const loader = new THREE.GLTFLoader();
       loader.load(
         'arm.glb',
-        function(gltf) {
+        function (gltf) {
           model = gltf.scene;
-          
+
           // Center and scale the model appropriately
           const box = new THREE.Box3().setFromObject(model);
           const center = box.getCenter(new THREE.Vector3());
           const size = box.getSize(new THREE.Vector3());
-          
-          // Center the model
           model.position.x -= center.x;
           model.position.y -= center.y;
           model.position.z -= center.z;
-          
-          // Scale the model to a reasonable size
           const maxDim = Math.max(size.x, size.y, size.z);
           const scale = 5 / maxDim;
           model.scale.set(scale, scale, scale);
-          
+
+          // Check and convert geometry if necessary
+          if (model.geometry && !(model.geometry instanceof THREE.BufferGeometry)) {
+            model.geometry = new THREE.BufferGeometry().fromGeometry(model.geometry);
+          }
+
           scene.add(model);
-          
+
           // Hide loading message
           document.getElementById('loading').style.display = 'none';
         },
-        function(xhr) {
+        function (xhr) {
           console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         },
-        function(error) {
+        function (error) {
           console.error('An error happened loading the model:', error);
         }
       );
-      
+
       // Resize handler
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
@@ -202,7 +214,7 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
     }
-    
+
     function setupDecalFunctionality() {
       // Create line to visualize intersection
       const lineGeometry = new THREE.BufferGeometry();
@@ -235,122 +247,66 @@
       const textureLoader = new THREE.TextureLoader();
       textureLoader.load(
         'https://threejs.org/examples/textures/decal/decal-diffuse.png',
-        function(texture) {
+        function (texture) {
           texture.encoding = THREE.sRGBEncoding;
           decalMaterial.map = texture;
           customTexture = texture;
-          
+
           // Create initial decal with default texture
           createDecal();
         }
       );
-      
+
       // Mouse events for dragging
       window.addEventListener('pointerdown', startDrag);
       window.addEventListener('pointermove', moveDecal);
       window.addEventListener('pointerup', endDrag);
     }
 
-    function createDecal(existingPosition = null, existingOrientation = null, existingSize = null) {
-      if (!model) return;
-
-      // Use existing position, orientation, and size if provided
-      if (existingPosition && existingOrientation && existingSize) {
-        position.copy(existingPosition);
-        orientation.copy(existingOrientation);
-        size.copy(existingSize);
-      } else {
-        // Default behavior: calculate position and orientation
-        if (!intersection.intersects) {
-          // Cast ray from camera center
-          raycaster.setFromCamera(new THREE.Vector2(0, 0), camera);
-          const intersects = raycaster.intersectObject(model, true);
-          
-          if (intersects.length > 0) {
-            // Use the center intersection point
-            position.copy(intersects[0].point);
-            
-            // Get normal for orientation
-            if (intersects[0].face) {
-              intersection.normal.copy(intersects[0].face.normal);
-            } else {
-              const normalAttr = intersects[0].object.geometry.getAttribute('normal');
-              if (normalAttr) {
-                const normalIndex = 0;
-                intersection.normal.set(
-                  normalAttr.array[normalIndex * 3],
-                  normalAttr.array[normalIndex * 3 + 1],
-                  normalAttr.array[normalIndex * 3 + 2]
-                );
-              } else {
-                intersection.normal.set(0, 1, 0);
-              }
-            }
-            intersection.normal.transformDirection(intersects[0].object.matrixWorld);
-          } else {
-            // Default position if no intersection found
-            position.set(0, 0, 1);
-            intersection.normal.set(0, 0, -1);
-          }
-        } else {
-          position.copy(intersection.point);
-        }
-
-        // Set orientation based on normal
-        mouseHelper.position.copy(position);
-        const n = intersection.normal.clone();
-        n.multiplyScalar(10);
-        n.add(position);
-        mouseHelper.lookAt(n);
-        orientation.copy(mouseHelper.rotation);
-        
-        // Get size from slider
-        const decalScale = parseFloat(document.getElementById('decalSize').value);
-        size.set(decalScale, decalScale, decalScale);
+    function createDecal() {
+      if (!model) {
+        console.error("Model is not loaded yet.");
+        return;
       }
 
-      // Clear existing decal
-      clearCurrentDecal();
-      
-      // Find target object
-      let targetObject;
-      const intersects = raycaster.intersectObject(model, true);
-      if (intersects.length > 0) {
-        targetObject = intersects[0].object;
-      } else if (model.children.length > 0) {
-        targetObject = model.children[0]; // Fallback to first child
-      } else {
-        targetObject = model; // Fallback to model itself
+      const targetObject = raycaster.intersectObject(model, true)[0]?.object;
+
+      if (!targetObject) {
+        console.error("No valid intersection found.");
+        return;
       }
-      
-      // Create material with current settings
+
+      if (!targetObject.geometry || !(targetObject.geometry instanceof THREE.BufferGeometry)) {
+        console.error("Invalid geometry for decal creation.");
+        return;
+      }
+
+      mouseHelper.position.copy(position);
+      const n = intersection.normal.clone();
+      n.multiplyScalar(10);
+      n.add(position);
+      mouseHelper.lookAt(n);
+      orientation.copy(mouseHelper.rotation);
+
+      size.set(0.5, 0.5, 0.5); // Default size
+
       const material = decalMaterial.clone();
       material.opacity = parseFloat(document.getElementById('decalOpacity').value);
-      
-      // Create new decal
+
       try {
-        const m = new THREE.DecalGeometry(
-          targetObject, 
-          position,
-          orientation,
-          size
-        );
-        
+        const m = new THREE.DecalGeometry(targetObject, position, orientation, size);
         const decalMesh = new THREE.Mesh(m, material);
         currentDecal = decalMesh;
         scene.add(decalMesh);
-        
-        // Update UI
-        document.getElementById('info').textContent = 'Drag to move decal on model surface';
-      } catch(e) {
-        console.error("Error creating decal:", e);
+      } catch (error) {
+        console.error("Error creating decal:", error);
       }
     }
 
     function startDrag(event) {
       // First check if we're intersecting with the model
       checkIntersection(event.clientX, event.clientY);
-      
+
       // Only start drag if:
       // 1. We have a valid decal
       // 2. We're clicking with left mouse button
@@ -368,11 +324,11 @@
     function moveDecal(event) {
       // Update intersection information regardless of dragging state
       checkIntersection(event.clientX, event.clientY);
-      
+
       // If dragging and we have an intersection, update decal position
       if (isDragging && intersection.intersects && currentDecal) {
         position.copy(intersection.point);
-        
+
         // Update orientation based on surface normal
         const n = intersection.normal.clone();
         n.multiplyScalar(10);
@@ -380,27 +336,32 @@
         mouseHelper.position.copy(position);
         mouseHelper.lookAt(n);
         orientation.copy(mouseHelper.rotation);
-        
+
         // Find the object that was intersected
-        const targetObject = raycaster.intersectObject(model, true)[0].object;
-        
+        const targetObject = raycaster.intersectObject(model, true)[0]?.object;
+
+        if (!targetObject || !targetObject.geometry || !(targetObject.geometry instanceof THREE.BufferGeometry)) {
+          console.error("Invalid geometry for decal creation.");
+          return;
+        }
+
         // Update decal
         try {
           // Remove current decal first
           scene.remove(currentDecal);
           if (currentDecal.geometry) currentDecal.geometry.dispose();
-          
+
           // Create new decal at updated position
           const m = new THREE.DecalGeometry(
-            targetObject, 
+            targetObject,
             position,
             orientation,
             size
           );
-          
+
           currentDecal.geometry = m;
           scene.add(currentDecal);
-        } catch(e) {
+        } catch (e) {
           console.error("Error updating decal:", e);
         }
       }
@@ -415,35 +376,34 @@
     }
 
     function checkIntersection(x, y) {
-      if (!model) return;
+      if (!model) {
+        console.warn("Model is not loaded yet.");
+        return;
+      }
 
+      // Convert mouse coordinates to normalized device coordinates
       mouse.x = (x / window.innerWidth) * 2 - 1;
       mouse.y = -(y / window.innerHeight) * 2 + 1;
 
+      // Set raycaster from camera and mouse position
       raycaster.setFromCamera(mouse, camera);
+
+      // Intersect with the model
       const intersects = [];
       raycaster.intersectObject(model, true, intersects);
+
 
       if (intersects.length > 0) {
         const p = intersects[0].point;
         mouseHelper.position.copy(p);
         intersection.point.copy(p);
 
-        // Get the normal at intersection point
+        // Get the normal at the intersection point
         if (intersects[0].face) {
           intersection.normal.copy(intersects[0].face.normal);
         } else {
-          const normalAttr = intersects[0].object.geometry.getAttribute('normal');
-          if (normalAttr) {
-            const normalIndex = intersects[0].face ? intersects[0].face.a : 0;
-            intersection.normal.set(
-              normalAttr.array[normalIndex * 3],
-              normalAttr.array[normalIndex * 3 + 1],
-              normalAttr.array[normalIndex * 3 + 2]
-            );
-          } else {
-            intersection.normal.set(0, 1, 0);
-          }
+          console.warn("No face normal found.");
+          intersection.normal.set(0, 1, 0); // Default normal
         }
 
         intersection.normal.transformDirection(intersects[0].object.matrixWorld);
@@ -453,11 +413,11 @@
         positions.array[0] = p.x;
         positions.array[1] = p.y;
         positions.array[2] = p.z;
-        
+
         const n = intersection.normal.clone();
         n.multiplyScalar(10);
         n.add(p);
-        
+
         positions.array[3] = n.x;
         positions.array[4] = n.y;
         positions.array[5] = n.z;
@@ -466,6 +426,7 @@
         intersection.intersects = true;
       } else {
         intersection.intersects = false;
+        console.warn("No valid intersection found.");
       }
     }
 
@@ -479,71 +440,78 @@
     }
 
     function setupEventListeners() {
-      // Apply decal when image is uploaded
-      document.getElementById('imageUpload').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-              customTexture = new THREE.Texture(img);
-              customTexture.needsUpdate = true;
-              customTexture.encoding = THREE.sRGBEncoding;
-              
-              // Update the decal material with the new texture
-              decalMaterial.map = customTexture;
-              decalMaterial.needsUpdate = true;
-              
-              // Create/update decal with new texture
-              createDecal();
-            };
-            img.src = event.target.result;
-          };
-          reader.readAsDataURL(file);
-        }
+      // Place decal on click
+      window.addEventListener('pointerdown', function (event) {
+        placeDecal(event.clientX, event.clientY);
       });
-      
+
       // Decal size control
-      document.getElementById('decalSize').addEventListener('input', function() {
+      document.getElementById('decalSize').addEventListener('input', function () {
         const value = parseFloat(this.value);
         document.getElementById('sizeValue').textContent = value.toFixed(1);
-        
-        // Update size and recreate decal if it exists
         size.set(value, value, value);
+        
         if (currentDecal) {
-          createDecal();
+          updateCurrentDecal();
         }
       });
-      
+
       // Opacity control
-      document.getElementById('decalOpacity').addEventListener('input', function() {
+      document.getElementById('decalOpacity').addEventListener('input', function () {
         const value = parseFloat(this.value);
         document.getElementById('opacityValue').textContent = value.toFixed(1);
-        
-        // Update opacity of current decal if it exists
+
         if (currentDecal && currentDecal.material) {
           currentDecal.material.opacity = value;
           currentDecal.material.needsUpdate = true;
         }
       });
-      
+
+      // Rotation control
+      document.getElementById('decalRotation').addEventListener('input', function () {
+        const value = parseFloat(this.value);
+        document.getElementById('rotationValue').textContent = value.toFixed(1);
+        orientation.z = THREE.MathUtils.degToRad(value);
+
+        // Update the decal immediately
+        updateCurrentDecal();
+      });
+
       // Clear decal button
       document.getElementById('clearDecals').addEventListener('click', clearCurrentDecal);
+    }
 
-      // Ensure controls are always enabled when user clicks outside the renderer
-      document.addEventListener('click', function(event) {
-        if (event.target !== renderer.domElement) {
-          controls.enabled = true;
-        }
-      });
+    // Function to update the current decal
+    function updateCurrentDecal() {
+      if (!currentDecal || !model) {
+        console.warn("No current decal or model is not loaded.");
+        return;
+      }
 
-      // Add info text to help users understand the controls
-      const originalInfo = document.getElementById('info').textContent;
-      document.getElementById('renderer').addEventListener('mouseenter', function() {
-        document.getElementById('info').textContent = currentDecal ? 
-          'Click on model to drag decal, click background to rotate camera' : originalInfo;
-      });
+      // Find the closest object under the decal's position
+      raycaster.set(currentDecal.position, new THREE.Vector3(0, -1, 0));
+      const intersects = raycaster.intersectObject(model, true);
+      const targetObject = intersects[0]?.object;
+
+      if (!targetObject) {
+        console.warn("No valid target object found for decal update.");
+        return;
+      }
+
+      // Keep the current material
+      const currentMaterial = currentDecal.material;
+
+      // Remove the current decal mesh but keep the material
+      scene.remove(currentDecal);
+      if (currentDecal.geometry) currentDecal.geometry.dispose();
+
+      try {
+        const decalGeometry = new THREE.DecalGeometry(targetObject, position, orientation, size);
+        currentDecal = new THREE.Mesh(decalGeometry, currentMaterial);
+        scene.add(currentDecal);
+      } catch (error) {
+        console.error("Error updating decal:", error);
+      }
     }
 
     function animate() {
@@ -551,6 +519,62 @@
       controls.update();
       renderer.render(scene, camera);
     }
+
+    function placeDecal(x, y) {
+
+      if (!model) {
+        console.warn("Model is not loaded yet.");
+        return;
+      }
+
+      // Convert mouse coordinates to normalized device coordinates
+      mouse.x = (x / window.innerWidth) * 2 - 1;
+      mouse.y = -(y / window.innerHeight) * 2 + 1;
+
+      // Set raycaster from camera and mouse position
+      raycaster.setFromCamera(mouse, camera);
+
+      // Intersect with the model
+      const intersects = raycaster.intersectObject(model, true);
+
+      if (intersects.length === 0) {
+        console.warn("No intersection found.");
+        return;
+      }
+
+      const targetObject = intersects[0].object;
+
+      // Ensure the geometry is a BufferGeometry
+      if (!targetObject.geometry || !(targetObject.geometry instanceof THREE.BufferGeometry)) {
+        console.error("Invalid geometry for decal creation.");
+        return;
+      }
+
+      // Set the position and orientation of the decal
+      position.copy(intersects[0].point);
+      const normal = intersects[0].face.normal.clone();
+      normal.transformDirection(targetObject.matrixWorld);
+      orientation.setFromVector3(normal);
+
+      // Remove the current decal if it exists
+      if (currentDecal) {
+        scene.remove(currentDecal);
+        if (currentDecal.geometry) currentDecal.geometry.dispose();
+      }
+
+      // Create the decal
+      const material = decalMaterial.clone();
+      material.opacity = parseFloat(document.getElementById('decalOpacity').value);
+
+      try {
+        const decalGeometry = new THREE.DecalGeometry(targetObject, position, orientation, size);
+        currentDecal = new THREE.Mesh(decalGeometry, material);
+        scene.add(currentDecal);
+      } catch (error) {
+        console.error("Error creating decal:", error);
+      }
+    }
   </script>
 </body>
+
 </html>
