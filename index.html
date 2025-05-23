@@ -597,12 +597,18 @@
 
       // Set the position and orientation of the decal
       position.copy(intersects[0].point);
-      const normal = intersects[0].face.normal.clone();
-      normal.transformDirection(targetObject.matrixWorld);
-      
+
+      // Update orientation based on surface normal - same as in moveDecal
+      const n = intersects[0].face.normal.clone();
+      n.transformDirection(targetObject.matrixWorld);
+      n.multiplyScalar(10);
+      n.add(position);
+      mouseHelper.position.copy(position);
+      mouseHelper.lookAt(n);
+      orientation.copy(mouseHelper.rotation);
+
       // Keep current rotation when creating new decal
       const currentRotation = parseFloat(document.getElementById('decalRotation').value);
-      orientation.setFromVector3(normal);
       orientation.z = THREE.MathUtils.degToRad(currentRotation);
 
       // Remove the current decal if it exists
