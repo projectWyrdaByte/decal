@@ -1,0 +1,385 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+body {
+  margin: 0;
+  background-color: #1a1a1a;
+  overflow: hidden;
+  color: white;
+  font-family: "DM Sans", serif;
+}
+
+#controls {
+  position: absolute;
+  padding: 10px;
+  padding-left: 20px;
+  padding-right: 20px;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 320px;
+  height: 100%;
+  background-color: #222126;
+}
+
+#modelControls {
+  margin-bottom: 15px;
+}
+
+.tabs {
+  display: flex;
+  position: relative;
+  background-color: #222126;
+  padding: 10px;
+  border-radius: 99px;
+  border: 2px solid #B7B0B2;
+  margin-bottom: 20px;
+}
+
+
+.tabs * {
+  z-index: 2;
+}
+
+.container input[type="radio"] {
+  display: none;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  width: 50%;
+  font-size: 18px;
+  font-weight: 700;
+  color: rgb(255, 255, 255);
+  border-radius: 99px;
+  cursor: pointer;
+  transition: color 0.15s ease-in;
+}
+
+.container input[type="radio"]:checked+label {
+  color: black;
+}
+
+.container input[id="radio-1"]:checked~.glider {
+  transform: translateX(0);
+}
+
+.container input[id="radio-2"]:checked~.glider {
+  transform: translateX(100%);
+}
+
+.glider {
+  position: absolute;
+  display: flex;
+  height: 42px;
+  top: 6px;
+  width: 46%;
+  background-color: #e6eef9;
+  z-index: 1;
+  border-radius: 60px;
+  transition: 0.25s ease-out;
+}
+
+@media (max-width: 700px) {
+
+  .tabs {
+    transform: scale(0.6);
+  }
+}
+
+
+.step {
+  font-size: 19px;
+  margin-bottom: 6px;
+}
+
+.step2 {
+  font-size: 19px;
+
+}
+
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 10px;
+  max-height: 400px;
+  overflow-y: scroll;
+  padding-right: 10px;
+  scrollbar-color: #e6eef9 transparent;
+  border-bottom: #e6eef9 2px;
+  margin-bottom: 20px;
+}
+
+#selectLeg {
+  margin-top: 10px;
+}
+
+.button-group button {
+  background-color: #222126;
+  width: 100%;
+  color: white;
+  border: 2px solid #e6eef9;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 16px;
+  min-height: 160px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  position: relative; /* Add this */
+}
+
+/* Add these new styles */
+.hover-options {
+  position: absolute;
+  left: 105%;
+  top: 0;
+  background-color: #e6eef9;
+  border-radius: 12px;
+  padding: 10px;
+  width: 160px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-20px);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.hover-options button {
+  background-color: #222126;
+  color: white;
+  min-height: auto;
+  padding: 8px;
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+.hover-options button:hover {
+  background-color: #e6eef9;
+  color: #222126;
+}
+
+button:hover .hover-options {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
+.button-group button:hover {
+  transform: translateY(-3px);
+}
+
+.button-group .active {
+  background-color: #e6eef9;
+  color: black;
+}
+
+.hidden {
+  display: none;
+}
+
+.control-group {
+  margin-bottom: 10px;
+}
+
+label {
+  display: inline-block;
+  width: 100px;
+}
+
+input[type="range"] {
+  width: 150px;
+  vertical-align: middle;
+  background: transparent;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  background: #fefdff;
+  border: 2px solid #e6eef9;
+  border-radius: 4px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: white;
+  margin-top: -6px;
+  cursor: pointer;
+}
+
+input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 8px;
+  background: #222126;
+  border: 2px solid #e6eef9;
+  border-radius: 4px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  cursor: pointer;
+}
+
+.resetBtns {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.reset {
+  padding: 5px 8px;
+  background-color: transparent;
+  border: 2px solid #e6eef9;
+  color: #e6eef9;
+  border-radius: 6px;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.reset:hover {
+  background-color: #e6eef9;
+  color: #222126;
+  transform: translateY(-3px);
+}
+
+.value-display {
+  display: inline-block;
+
+  text-align: right;
+}
+
+.loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 18px;
+}
+
+#info {
+  position: absolute;
+  top: 10px;
+  width: 100%;
+  text-align: center;
+}
+
+.welcome-message {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #222126;
+  padding: 30px;
+  border-radius: 15px;
+  max-width: 600px;
+  text-align: center;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+.welcome-message h2 {
+  color: #e6eef9;
+  margin-bottom: 20px;
+}
+
+.instructions {
+  text-align: left;
+}
+
+.instructions ol {
+  margin: 20px 0;
+  padding-left: 20px;
+}
+
+.instructions li {
+  margin: 10px 0;
+  line-height: 1.4;
+}
+
+.start-button {
+  background-color: #e6eef9;
+  color: #222126;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: transform 0.2s ease;
+}
+
+.start-button:hover {
+  transform: scale(1.05);
+}
+
+.step-bubble {
+  position: fixed;
+  bottom: 30px;
+  right: -400px;
+  background: #e6eef9;
+  color: #222126;
+  padding: 15px 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  width: 300px;
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.bubble-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.step-number {
+  background: #222126;
+  color: #e6eef9;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.step-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.bubble-show {
+  opacity: 1;
+  right: 30px;
+}
+
+.fade-out {
+  animation: fadeOut 0.5s forwards;
+  pointer-events: none;
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}

@@ -1,113 +1,214 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ro">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Model with Moveable Decal</title>
+  <meta name="description"
+    content="Simulator tatuaje 3D - Încearcă gratuit cum arată tatuajul tău pe un model 3D înainte de a-l face. Personalizează mărimea, poziția și rotația." />
+  <meta name="keywords" content="simulator tatuaje, tatuaje 3D, preview tatuaj, design tatuaj" />
+  <title>Simulator Tatuaje 3D | Încearcă Înainte să te Tatuezi</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    body {
-      margin: 0;
-      background-color: #1a1a1a;
-      overflow: hidden;
-      color: white;
-      font-family: Arial, sans-serif;
+    @keyframes centerToCorner {
+      0% {
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        border-radius: 15px;
+      }
+
+      60% {
+        padding: 30px;
+        font-size: 1em;
+      }
+
+      100% {
+        top: auto;
+        bottom: 20px;
+        left: auto;
+        right: 20px;
+        transform: translate(0, 0) scale(0.8);
+        border-radius: 30px;
+        padding: 15px;
+        font-size: 0.9em;
+      }
     }
 
-    #controls {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.5);
-      border-radius: 5px;
-      width: 250px;
-    }
-
-    input {
-      margin-bottom: 10px;
-    }
-
-    button {
-      background-color: #444;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-      border-radius: 3px;
-      margin-bottom: 5px;
-    }
-
-    button:hover {
-      background-color: #666;
-    }
-
-    .control-group {
-      margin-bottom: 10px;
-    }
-
-    label {
-      display: inline-block;
-      width: 70px;
-    }
-
-    input[type="range"] {
-      width: 150px;
-      vertical-align: middle;
-    }
-
-    .value-display {
-      display: inline-block;
-      width: 30px;
-      text-align: right;
-    }
-
-    .loading {
+    .welcome-message {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      color: white;
-      font-size: 18px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      text-align: center;
+      z-index: 1000;
+      cursor: default;
+      transition: transform 0.3s ease;
     }
 
-    #info {
+    .welcome-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      z-index: 999;
+      display: none;
+      transition: opacity 0.3s;
+    }
+
+    .welcome-toggle:hover {
+      transform: scale(1.05);
+    }
+
+    .welcome-message.animate {
+      animation: centerToCorner 1.2s forwards cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .welcome-message.animate:hover {
+      transform: translate(0, 0) scale(1);
+    }
+
+    .welcome-message.hide {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+
+    .welcome-message h3 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .welcome-message ol {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+
+    .welcome-message li {
+      margin: 5px 0;
+      color: #555;
+    }
+
+    .file-input {
+      width: 0.1px;
+      height: 0.1px;
+      opacity: 0;
+      overflow: hidden;
       position: absolute;
-      top: 10px;
+      z-index: -1;
+    }
+
+    .upload-label {
+      display: inline-block;
       width: 100%;
+      border: 2px dashed #e6eef9;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
       text-align: center;
+      height: 45px;
+      line-height: 45px;
+      margin-bottom: 15px;
+    }
+
+    .upload-label:hover {
+      background: #e6eef9;
+      color: #333;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .upload-label:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
   </style>
 </head>
 
 <body>
-  <div id="loading" class="loading">Loading model...</div>
-  <div id="info">Drag to move decal on model surface</div>
+  <div id="loading" class="loading">Se încarcă modelul 3D...</div>
+  <div id="info">Trage pentru a muta tatuajul pe suprafața modelului</div>
 
   <div id="controls">
-    <h3>Decal Controls</h3>
-    <input type="file" id="imageUpload" accept="image/*" />
-
-    <div class="control-group">
-      <label>Size:</label>
-      <input type="range" id="decalSize" min="0.1" max="2" step="0.1" value="0.5">
-      <span class="value-display" id="sizeValue">0.5</span>
+    <h1>Simulator Tatuaje 3D</h1>
+    <div id="modelControls">
+      <div class="step">Pasul 1: Alege Modelul</div>
+      <!-- From Uiverse.io by Pradeepsaranbishnoi -->
+      <div class="container">
+        <div class="tabs">
+          <input type="radio" id="radio-1" name="tabs" value="man" checked="">
+          <label class="tab" for="radio-1">Bărbat</label>
+          <input type="radio" id="radio-2" name="tabs" value="woman">
+          <label class="tab" for="radio-2">Femeie</label>
+          <span class="glider"></span>
+        </div>
+      </div>
+      <div id="bodyParts">
+        <div class="step2">Pasul 2: Zona Tatuaj</div>
+        <div class="button-group">
+          <button id="selectLeg">Picior</button>
+          <button id="selectArm">Braț</button>
+          <button id="selectTorso">Piept</button>
+          <button id="selectBack">Spate</button>
+        </div>
+      </div>
     </div>
 
-    <div class="control-group">
-      <label>Opacity:</label>
-      <input type="range" id="decalOpacity" min="0.1" max="1" step="0.1" value="1">
-      <span class="value-display" id="opacityValue">1.0</span>
-    </div>
+    <div id="decalControls">
+      <div class="step">Pasul 3: Personalizare Tatuaj</div>
+      <div class="upload-section">
+        <input type="file" id="imageUpload" accept="image/*" class="file-input" />
+        <label for="imageUpload" class="upload-label">Încarcă imaginea tatuajului</label>
+      </div>
 
-    <div class="control-group">
-      <label>Rotation:</label>
-      <input type="range" id="decalRotation" min="-180" max="180" step="1" value="0">
-      <span class="value-display" id="rotationValue">0</span>
-    </div>
+      <div class="control-group">
+        <label>Dimensiune:</label>
+        <input type="range" id="decalSize" min="0.1" max="5" step="0.1" value="0.5">
+        x<span class="value-display" id="sizeValue">0.5</span>
+      </div>
 
-    <button id="clearDecals">Remove Decal</button>
+      <div class="control-group">
+        <label>Opacitate:</label>
+        <input type="range" id="decalOpacity" min="0.1" max="1" step="0.1" value="1">
+        <span class="value-display" id="opacityValue">100</span>%
+      </div>
+
+      <div class="control-group">
+        <label>Rotire:</label>
+        <input type="range" id="decalRotation" min="0" max="360" step="1" value="0">
+        <span class="value-display" id="rotationValue">0</span>°
+      </div>
+
+      <div class="resetBtns">
+        <button class="reset" id="clearDecals">Șterge Tatuajul</button>
+        <button class="reset" id="resetControls">Resetare Controale</button>
+      </div>
+    </div>
   </div>
+
+  <div id="welcomeMessage" class="welcome-message">
+    <h3>Cum să folosești simulatorul:</h3>
+    <ol>
+      <li>Încarcă imaginea tatuajului folosind butonul de upload</li>
+      <li>Ajustează dimensiunea și rotația tatuajului folosind controalele</li>
+      <li>Click pentru a plasa tatuajul pe model</li>
+      <li>Trage pentru a muta tatuajul pe suprafață</li>
+      <li>Folosește controalele de opacitate pentru preview</li>
+    </ol>
+  </div>
+
+  <button id="welcomeToggle" class="welcome-toggle">Arată instrucțiuni</button>
 
   <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/js/controls/OrbitControls.js"></script>
@@ -115,12 +216,28 @@
   <script src="https://cdn.jsdelivr.net/npm/three@0.135.0/examples/js/geometries/DecalGeometry.js"></script>
 
   <script>
+    const models = [
+      {
+        name: 'man',
+        leg: 'arm.glb',
+        arm: 'arm.glb',
+        torso: 'arm.glb',
+        back: 'arm.glb'
+      },
+      {
+        name: 'woman',
+        leg: 'arm.glb',
+        arm: 'arm.glb',
+        torso: 'arm.glb',
+        back: 'arm.glb'
+      }
+    ]
+
     let scene, camera, renderer, model, controls;
     let raycaster, mouse, line, mouseHelper;
     let decalMaterial, currentDecal = null;
     let customTexture = null;
     let isDragging = false;
-    let controlsEnabled = true;
 
     const intersection = {
       intersects: false,
@@ -133,26 +250,26 @@
     const size = new THREE.Vector3(0.5, 0.5, 0.5); // Default decal size
     let aspectRatio = 1; // Add this line to store aspect ratio
 
-    init();
-    animate();
-    setupEventListeners();
+    let currentModelType = null;
+    let currentBodyPart = null;
 
     function init() {
+      // Initially hide the 3D canvas
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.domElement.style.display = 'none';
+      document.body.appendChild(renderer.domElement);
+
       // Main scene
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
       camera.position.set(0, 0, 5);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      document.body.appendChild(renderer.domElement);
-
-      // Controls
+      // Initialize controls before starting animation
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.rotateSpeed = 0.5;
       controls.zoomSpeed = 0.8;
-      controls.enabled = true; // Ensure controls are enabled by default
-      controlsEnabled = true;  // Track the enabled state
+      controls.enabled = true;
 
       // Setup raycaster
       raycaster = new THREE.Raycaster();
@@ -171,49 +288,6 @@
 
       // Setup decal functionality
       setupDecalFunctionality();
-
-      // Load GLB model
-      const loader = new THREE.GLTFLoader();
-      loader.load(
-        'arm.glb',
-        function (gltf) {
-          model = gltf.scene;
-
-          // Center and scale the model appropriately
-          const box = new THREE.Box3().setFromObject(model);
-          const center = box.getCenter(new THREE.Vector3());
-          const size = box.getSize(new THREE.Vector3());
-          model.position.x -= center.x;
-          model.position.y -= center.y;
-          model.position.z -= center.z;
-          const maxDim = Math.max(size.x, size.y, size.z);
-          const scale = 5 / maxDim;
-          model.scale.set(scale, scale, scale);
-
-          // Check and convert geometry if necessary
-          if (model.geometry && !(model.geometry instanceof THREE.BufferGeometry)) {
-            model.geometry = new THREE.BufferGeometry().fromGeometry(model.geometry);
-          }
-
-          scene.add(model);
-
-          // Hide loading message
-          document.getElementById('loading').style.display = 'none';
-        },
-        function (xhr) {
-          console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-        },
-        function (error) {
-          console.error('An error happened loading the model:', error);
-        }
-      );
-
-      // Resize handler
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
     }
 
     function setupDecalFunctionality() {
@@ -266,7 +340,6 @@
 
     function createDecal() {
       if (!model) {
-        console.error("Model is not loaded yet.");
         return;
       }
 
@@ -378,7 +451,6 @@
 
     function checkIntersection(x, y) {
       if (!model) {
-        console.warn("Model is not loaded yet.");
         return;
       }
 
@@ -403,7 +475,6 @@
         if (intersects[0].face) {
           intersection.normal.copy(intersects[0].face.normal);
         } else {
-          console.warn("No face normal found.");
           intersection.normal.set(0, 1, 0); // Default normal
         }
 
@@ -427,7 +498,6 @@
         intersection.intersects = true;
       } else {
         intersection.intersects = false;
-        console.warn("No valid intersection found.");
       }
     }
 
@@ -440,26 +510,51 @@
       }
     }
 
+    function resetControls() {
+      // Reset size
+      document.getElementById('decalSize').value = '0.5';
+      document.getElementById('sizeValue').textContent = '0.5';
+      size.set(0.5 * aspectRatio, 0.5, 0.5);
+
+      // Reset opacity
+      document.getElementById('decalOpacity').value = '1';
+      document.getElementById('opacityValue').textContent = '100';
+      if (currentDecal && currentDecal.material) {
+        currentDecal.material.opacity = 1.0;
+        currentDecal.material.needsUpdate = true;
+      }
+
+      // Reset rotation
+      document.getElementById('decalRotation').value = '0';
+      document.getElementById('rotationValue').textContent = '0';
+      orientation.z = 0;
+
+      // Update decal if it exists
+      if (currentDecal) {
+        updateCurrentDecal();
+      }
+    }
+
     function setupEventListeners() {
       // Image upload handler
-      document.getElementById('imageUpload').addEventListener('change', function(e) {
+      document.getElementById('imageUpload').addEventListener('change', function (e) {
         const file = e.target.files[0];
         if (file) {
           const reader = new FileReader();
-          reader.onload = function(event) {
+          reader.onload = function (event) {
             const img = new Image();
-            img.onload = function() {
+            img.onload = function () {
               // Calculate and store aspect ratio
               aspectRatio = this.width / this.height;
-              
+
               // Update size to maintain aspect ratio
               const currentSize = parseFloat(document.getElementById('decalSize').value);
               size.set(currentSize * aspectRatio, currentSize, currentSize);
-              
+
               const texture = new THREE.Texture(this);
               texture.needsUpdate = true;
               texture.encoding = THREE.sRGBEncoding;
-              
+
               // Update current decal if it exists
               if (currentDecal && currentDecal.material) {
                 currentDecal.material.map = texture;
@@ -467,11 +562,11 @@
                 // Update geometry with new aspect ratio
                 updateCurrentDecal();
               }
-              
+
               // Update decal material for future decals
               decalMaterial.map = texture;
               decalMaterial.needsUpdate = true;
-              
+
               // Store the texture
               if (customTexture) {
                 customTexture.dispose();
@@ -495,7 +590,7 @@
         document.getElementById('sizeValue').textContent = value.toFixed(1);
         // Update size maintaining aspect ratio
         size.set(value * aspectRatio, value, value);
-        
+
         if (currentDecal) {
           updateCurrentDecal();
         }
@@ -504,7 +599,7 @@
       // Opacity control
       document.getElementById('decalOpacity').addEventListener('input', function () {
         const value = parseFloat(this.value);
-        document.getElementById('opacityValue').textContent = value.toFixed(1);
+        document.getElementById('opacityValue').textContent = Math.round(value * 100);
 
         if (currentDecal && currentDecal.material) {
           currentDecal.material.opacity = value;
@@ -521,6 +616,9 @@
         // Update the decal immediately
         updateCurrentDecal();
       });
+
+      // Reset controls button
+      document.getElementById('resetControls').addEventListener('click', resetControls);
 
       // Clear decal button
       document.getElementById('clearDecals').addEventListener('click', clearCurrentDecal);
@@ -559,9 +657,16 @@
       }
     }
 
+    init();
+    setupEventListeners();
+    setupModelControls();
+    animate();
+
     function animate() {
       requestAnimationFrame(animate);
-      controls.update();
+      if (controls) { // Add safety check
+        controls.update();
+      }
       renderer.render(scene, camera);
     }
 
@@ -620,7 +725,7 @@
       // Create the decal with current settings
       const material = decalMaterial.clone();
       material.opacity = parseFloat(document.getElementById('decalOpacity').value);
-      
+
       // Use current size value
       const currentSize = parseFloat(document.getElementById('decalSize').value);
       size.set(currentSize * aspectRatio, currentSize, currentSize);
@@ -633,6 +738,109 @@
         console.error("Error creating decal:", error);
       }
     }
+
+    function loadModel(modelPath) {
+      if (model) {
+        scene.remove(model);
+      }
+
+      const loader = new THREE.GLTFLoader();
+      loader.load(
+        modelPath,
+        function (gltf) {
+          model = gltf.scene;
+
+          // Center and scale the model appropriately
+          const box = new THREE.Box3().setFromObject(model);
+          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          model.position.x -= center.x;
+          model.position.y -= center.y;
+          model.position.z -= center.z;
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 5 / maxDim;
+          model.scale.set(scale, scale, scale);
+
+          // Check and convert geometry if necessary
+          if (model.geometry && !(model.geometry instanceof THREE.BufferGeometry)) {
+            model.geometry = new THREE.BufferGeometry().fromGeometry(model.geometry);
+          }
+
+          scene.add(model);
+
+          // Hide loading message
+          document.getElementById('loading').style.display = 'none';
+        },
+        // Remove the progress callback entirely since it only contained a console.log
+        undefined,
+        function (error) {
+          // Keep the error handler but without console.error
+          document.getElementById('loading').textContent = 'Error loading model';
+        }
+      );
+    }
+
+    function setupModelControls() {
+      // Hide welcome toggle initially
+      document.getElementById('welcomeToggle').style.display = 'none';
+
+      // Remove the old event listeners and implement new ones for radio buttons
+      document.querySelectorAll('input[name="tabs"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+          currentModelType = e.target.value;
+          document.getElementById('bodyParts').classList.remove('hidden');
+
+          // If a body part is already selected, load the corresponding model
+          if (currentBodyPart) {
+            const selectedModel = models.find(m => m.name === currentModelType);
+            if (selectedModel) {
+              loadModel(selectedModel[currentBodyPart]);
+            }
+          }
+        });
+      });
+
+      const bodyParts = ['Leg', 'Arm', 'Torso', 'Back'];
+      bodyParts.forEach(part => {
+        document.getElementById(`select${part}`).addEventListener('click', () => {
+          const partKey = part.toLowerCase();
+          currentBodyPart = partKey;
+          // Remove active class from all body part buttons
+          bodyParts.forEach(p => {
+            document.getElementById(`select${p}`).classList.remove('active');
+          });
+          // Add active class to clicked button
+          document.getElementById(`select${part}`).classList.add('active');
+
+          // Get the currently selected gender from radio buttons
+          const selectedGender = document.querySelector('input[name="tabs"]:checked').value;
+          const selectedModel = models.find(m => m.name === selectedGender);
+
+          if (selectedModel) {
+            // Hide welcome message and show 3D canvas
+            welcomeMessage.classList.add('animate');
+            setTimeout(() => {
+              welcomeMessage.classList.add('hide');
+              welcomeToggle.style.display = 'block';
+            }, 1200);
+            renderer.domElement.style.display = 'block';
+
+            loadModel(selectedModel[partKey]);
+            document.getElementById('decalControls').classList.remove('hidden');
+          }
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const welcomeMessage = document.getElementById('welcomeMessage');
+      const welcomeToggle = document.getElementById('welcomeToggle');
+
+      welcomeToggle.addEventListener('click', function () {
+        welcomeMessage.classList.remove('hide');
+        welcomeToggle.style.display = 'none';
+      });
+    });
   </script>
 </body>
 
