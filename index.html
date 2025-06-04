@@ -10,129 +10,9 @@
   <title>Simulator Tatuaje 3D | Încearcă Înainte să te Tatuezi</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    @keyframes centerToCorner {
-      0% {
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%) scale(1);
-        border-radius: 15px;
-      }
+   
 
-      60% {
-        padding: 30px;
-        font-size: 1em;
-      }
-
-      100% {
-        top: auto;
-        bottom: 20px;
-        left: auto;
-        right: 20px;
-        transform: translate(0, 0) scale(0.8);
-        border-radius: 30px;
-        padding: 15px;
-        font-size: 0.9em;
-      }
-    }
-
-    .welcome-message {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(255, 255, 255, 0.95);
-      padding: 30px;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      max-width: 400px;
-      text-align: center;
-      z-index: 1000;
-      cursor: default;
-      transition: transform 0.3s ease;
-    }
-
-    .welcome-toggle {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      padding: 10px 20px;
-      background: rgba(255, 255, 255, 0.95);
-      border: none;
-      border-radius: 30px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
-      z-index: 999;
-      display: none;
-      transition: opacity 0.3s;
-    }
-
-    .welcome-toggle:hover {
-      transform: scale(1.05);
-    }
-
-    .welcome-message.animate {
-      animation: centerToCorner 1.2s forwards cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    }
-
-    .welcome-message.animate:hover {
-      transform: translate(0, 0) scale(1);
-    }
-
-    .welcome-message.hide {
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.3s, visibility 0.3s;
-    }
-
-    .welcome-message h3 {
-      margin-top: 0;
-      color: #333;
-    }
-
-    .welcome-message ol {
-      margin: 10px 0;
-      padding-left: 20px;
-    }
-
-    .welcome-message li {
-      margin: 5px 0;
-      color: #555;
-    }
-
-    .file-input {
-      width: 0.1px;
-      height: 0.1px;
-      opacity: 0;
-      overflow: hidden;
-      position: absolute;
-      z-index: -1;
-    }
-
-    .upload-label {
-      display: inline-block;
-      width: 100%;
-      border: 2px dashed #e6eef9;
-      border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-align: center;
-      height: 45px;
-      line-height: 45px;
-      margin-bottom: 15px;
-    }
-
-    .upload-label:hover {
-      background: #e6eef9;
-      color: #333;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .upload-label:active {
-      transform: translateY(0);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+    
   </style>
 </head>
 
@@ -141,58 +21,73 @@
   <div id="info">Trage pentru a muta tatuajul pe suprafața modelului</div>
 
   <div id="controls">
-    <h1>Simulator Tatuaje 3D</h1>
+    <button id="toggleControls" aria-label="Toggle Controls"></button>
+    <div class="mainTitle">Simulator Tatuaje 3D</div>
     <div id="modelControls">
-      <div class="step">Pasul 1: Alege Modelul</div>
-      <!-- From Uiverse.io by Pradeepsaranbishnoi -->
-      <div class="container">
-        <div class="tabs">
-          <input type="radio" id="radio-1" name="tabs" value="man" checked="">
-          <label class="tab" for="radio-1">Bărbat</label>
-          <input type="radio" id="radio-2" name="tabs" value="woman">
-          <label class="tab" for="radio-2">Femeie</label>
-          <span class="glider"></span>
+      <div class="box1">
+        <div class="step">Pasul 1: Alege modelul</div>
+        <!-- From Uiverse.io by Pradeepsaranbishnoi -->
+        <div class="container">
+          <div class="tabs">
+            <input type="radio" id="radio-1" name="tabs" value="man" checked="">
+            <label class="tab" for="radio-1">Bărbat</label>
+            <input type="radio" id="radio-2" name="tabs" value="woman">
+            <label class="tab" for="radio-2">Femeie</label>
+            <span class="glider"></span>
+          </div>
         </div>
       </div>
       <div id="bodyParts">
-        <div class="step2">Pasul 2: Zona Tatuaj</div>
+        <div class="step2">Pasul 2: Zona tatuajului</div>
         <div class="button-group">
-          <button id="selectLeg">Picior</button>
-          <button id="selectArm">Braț</button>
-          <button id="selectTorso">Piept</button>
-          <button id="selectBack">Spate</button>
+          <div class="button-container pad">
+            <button class="parent-button">Picior</button>
+            <div class="sub-buttons">
+              <button class="sub-button" id="selectLeft_leg">Stânga</button>
+              <button class="sub-button" id="selectRight_leg">Dreapta</button>
+            </div>
+          </div>
+          <div class="button-container">
+            <button class="parent-button">Braț</button>
+            <div class="sub-buttons">
+              <button class="sub-button" id="selectLeft_arm">Stânga</button>
+              <button class="sub-button" id="selectRight_arm">Dreapta</button>
+            </div>
+          </div>
+          <button id="selectBody">Corp</button>
         </div>
       </div>
-    </div>
 
-    <div id="decalControls">
-      <div class="step">Pasul 3: Personalizare Tatuaj</div>
-      <div class="upload-section">
-        <input type="file" id="imageUpload" accept="image/*" class="file-input" />
-        <label for="imageUpload" class="upload-label">Încarcă imaginea tatuajului</label>
-      </div>
 
-      <div class="control-group">
-        <label>Dimensiune:</label>
-        <input type="range" id="decalSize" min="0.1" max="5" step="0.1" value="0.5">
-        x<span class="value-display" id="sizeValue">0.5</span>
-      </div>
+      <div id="decalControls">
+        <div class="step">Pasul 3: Personalizare Tatuaj</div>
+        <div class="upload-section">
+          <input type="file" id="imageUpload" accept="image/*" class="file-input" />
+          <label for="imageUpload" class="upload-label">Încarcă imaginea tatuajului</label>
+        </div>
 
-      <div class="control-group">
-        <label>Opacitate:</label>
-        <input type="range" id="decalOpacity" min="0.1" max="1" step="0.1" value="1">
-        <span class="value-display" id="opacityValue">100</span>%
-      </div>
+        <div class="control-group">
+          <label>Dimensiune:</label>
+          <input type="range" class="slider" id="decalSize" min="0.1" max="5" step="0.1" value="0.5">
+          x<span class="value-display" id="sizeValue">0.5</span>
+        </div>
 
-      <div class="control-group">
-        <label>Rotire:</label>
-        <input type="range" id="decalRotation" min="0" max="360" step="1" value="0">
-        <span class="value-display" id="rotationValue">0</span>°
-      </div>
+        <div class="control-group">
+          <label>Opacitate:</label>
+          <input type="range" class="slider" id="decalOpacity" min="0" max="1" step="0.1" value="1">
+          <span class="value-display" id="opacityValue">100</span>%
+        </div>
 
-      <div class="resetBtns">
-        <button class="reset" id="clearDecals">Șterge Tatuajul</button>
-        <button class="reset" id="resetControls">Resetare Controale</button>
+        <div class="control-group">
+          <label>Rotire:</label>
+          <input type="range" class="slider" id="decalRotation" min="0" max="360" step="1" value="0">
+          <span class="value-display" id="rotationValue">0</span>°
+        </div>
+
+        <div class="resetBtns">
+          <button class="reset" id="clearDecals">Șterge Tatuajul</button>
+          <button class="reset-controls" id="resetControls">Resetează controale</button>
+        </div>
       </div>
     </div>
   </div>
@@ -219,17 +114,19 @@
     const models = [
       {
         name: 'man',
-        leg: 'arm.glb',
-        arm: 'arm.glb',
-        torso: 'arm.glb',
-        back: 'arm.glb'
+        left_leg: '/tattoo/left_male_foot.glb',
+        right_leg: '/tattoo/right_male_foot.glb',
+        left_arm: '/tattoo/left_male_arm.glb',
+        right_arm: '/tattoo/right_male_arm.glb',
+        body: '/tattoo/male_body.glb',
       },
       {
         name: 'woman',
-        leg: 'arm.glb',
-        arm: 'arm.glb',
-        torso: 'arm.glb',
-        back: 'arm.glb'
+        left_leg: '/tattoo/left_female_foot.glb',
+        right_leg: '/tattoo/right_female_foot.glb',
+        left_arm: '/tattoo/left_female_arm.glb',
+        right_arm: '/tattoo/right_female_arm.glb',
+        body: '/tattoo/male_body.glb',
       }
     ]
 
@@ -536,6 +433,10 @@
     }
 
     function setupEventListeners() {
+      document.getElementById('toggleControls').addEventListener('click', function () {
+        document.getElementById('controls').classList.toggle('closed');
+      });
+
       // Image upload handler
       document.getElementById('imageUpload').addEventListener('change', function (e) {
         const file = e.target.files[0];
@@ -781,16 +682,13 @@
     }
 
     function setupModelControls() {
-      // Hide welcome toggle initially
       document.getElementById('welcomeToggle').style.display = 'none';
 
-      // Remove the old event listeners and implement new ones for radio buttons
       document.querySelectorAll('input[name="tabs"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
           currentModelType = e.target.value;
           document.getElementById('bodyParts').classList.remove('hidden');
 
-          // If a body part is already selected, load the corresponding model
           if (currentBodyPart) {
             const selectedModel = models.find(m => m.name === currentModelType);
             if (selectedModel) {
@@ -800,24 +698,19 @@
         });
       });
 
-      const bodyParts = ['Leg', 'Arm', 'Torso', 'Back'];
+      const bodyParts = ['left_leg', 'right_leg', 'left_arm', 'right_arm', 'body'];
       bodyParts.forEach(part => {
-        document.getElementById(`select${part}`).addEventListener('click', () => {
-          const partKey = part.toLowerCase();
-          currentBodyPart = partKey;
-          // Remove active class from all body part buttons
+        document.getElementById(`select${part.charAt(0).toUpperCase() + part.slice(1)}`).addEventListener('click', () => {
+          currentBodyPart = part;
           bodyParts.forEach(p => {
-            document.getElementById(`select${p}`).classList.remove('active');
+            document.getElementById(`select${p.charAt(0).toUpperCase() + p.slice(1)}`).classList.remove('active');
           });
-          // Add active class to clicked button
-          document.getElementById(`select${part}`).classList.add('active');
+          document.getElementById(`select${part.charAt(0).toUpperCase() + part.slice(1)}`).classList.add('active');
 
-          // Get the currently selected gender from radio buttons
           const selectedGender = document.querySelector('input[name="tabs"]:checked').value;
           const selectedModel = models.find(m => m.name === selectedGender);
 
           if (selectedModel) {
-            // Hide welcome message and show 3D canvas
             welcomeMessage.classList.add('animate');
             setTimeout(() => {
               welcomeMessage.classList.add('hide');
@@ -825,7 +718,7 @@
             }, 1200);
             renderer.domElement.style.display = 'block';
 
-            loadModel(selectedModel[partKey]);
+            loadModel(selectedModel[part]);
             document.getElementById('decalControls').classList.remove('hidden');
           }
         });
